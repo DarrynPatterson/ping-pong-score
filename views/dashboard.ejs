@@ -1,0 +1,17 @@
+<% include ./partials/secure-nav %>
+<div class="container">
+    <h1 class="mt-4">Dashboard</h1>
+    <p class="lead mb-3">Welcome <%= name %></p>
+    <a href="/users/logout" class="btn btn-secondary">Logout</a>
+    <button class="btn btn-secondary">Test API</button>
+    <div id="leaderboard"></div>
+</div>
+<script>
+    $(function() {
+        $("button").click(() => {
+            $.ajax('/api/leaderboard').then((data) => {
+                $("#leaderboard").html(`${data.person}`);
+            });
+        });
+    });
+</script>
