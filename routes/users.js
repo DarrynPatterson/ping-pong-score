@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
 
-// Load User model
+// Load models
 const User = require("../models/User");
 
 // GET: Login
@@ -82,7 +82,7 @@ router.post("/register", (req, res) => {
 // POST: Login
 router.post("/login", (req, res, next) => {
   passport.authenticate("local", {
-    successRedirect: "/dashboard",
+    successRedirect: "/record-match",
     failureRedirect: "/users/login",
     failureFlash: true
   })(req, res, next);

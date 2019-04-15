@@ -1,0 +1,76 @@
+<% include ./partials/secure-nav %>
+
+<div class="container">
+    <h1 class="mt-4 text-dark text-center">Select Players</h1>
+    <br />
+    <form action="/start-match" method="POST">
+        <div class="row">
+            <div class="col">
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h4 class="card-title">Player A</h4>
+                        <select id="player1Select" class="info__select">
+                            <option class="instruction" selected="selected">Select a player</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h4 class="card-title">Player B</h4>
+                        <select id="player2Select" class="info__select">
+                            <option class="instruction" selected="selected">Select a player</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="player1Id" name="player1Id" value="">
+        <input type="hidden" id="player2Id" name="player2Id" value="">
+        <button type="submit" id="startMatchButton" class="btn btn-success btn-lg btn-block disabled">Start Match!</button>
+    </form>
+</div>
+<script>
+    $(() => {
+        // Initialize slim select components
+        const player1SlimSelect = new SlimSelect({ select: "#player1Select" });
+        const player2SlimSelect = new SlimSelect({ select: "#player2Select" });
+
+        const startMatchButton = $("#startMatchButton");
+        const player1Select = $("#player1Select");
+        const player2Select = $("#player2Select");
+        const player1Key = $("#player1Id");
+        const player2Key = $("#player2Id");
+        
+        // Remove instruction when an option is selected
+        player1Select.change((event) => {
+            const selectedKey = $(event.target).children(":selected").attr("key");
+            player1Key.attr("value", selectedKey);
+            player1Select.find(".instruction").remove();
+            tryEnableMatchButton();
+        });
+        player2Select.change(() => {
+            const selectedKey = $(event.target).children(":selected").attr("key");
+            player2Key.attr("value", selectedKey);
+            player2Select.find(".instruction").remove();
+            tryEnableMatchButton();
+        });
+        
+        // Get all players
+        $.ajax('/api/users').then((data) => {
+            data.forEach((item) => {    
+                const optionTemplate = `<option key=${item._id} value=${item.name}">${item.name}</option>`;
+                player1Select.append($(optionTemplate));
+                player2Select.append($(optionTemplate));
+            });
+        });
+
+        const tryEnableMatchButton = (selectObj) => {
+            // Remove "disabled" class
+            if (player1Select.find(".instruction").length == 0 && player2Select.find(".instruction").length == 0) {
+                startMatchButton.removeClass("disabled");
+            }
+        };
+    });
+</script>

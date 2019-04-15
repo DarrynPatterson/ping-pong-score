@@ -1,17 +1,45 @@
 const mongoose = require("mongoose");
 
+const game = {
+  winnerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User"
+  },
+  loserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User"
+  },
+  winnerScore: {
+    type: Number,
+    required: true
+  },
+  loserScore: {
+    type: Number,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  }
+};
+
 const MatchSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    required: true
+  user1Id: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User"
   },
-  players: {
-    type: [ObjectId],
-    required: true
+  user2Id: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User"
   },
-  password: {
-    type: String,
-    required: true
+  games: [game],
+  isComplete: {
+    type: Boolean,
+    default: false
   },
   date: {
     type: Date,
@@ -19,6 +47,6 @@ const MatchSchema = new mongoose.Schema({
   }
 });
 
-const User = mongoose.model("User", UserSchema);
+const Match = mongoose.model("Match", MatchSchema);
 
-module.exports = User;
+module.exports = Match;
