@@ -1,6 +1,62 @@
 <% include ./partials/secure-nav %>
 
-<div id="container" class="container hidden">
-    <h1 class="mt-4 text-dark text-center">Leaderboard</h1>
-    <br />
+<div id="loader" class="container text-center loader">
+  <i class="fas fa-spinner fa-spin fa-5x"></i>
 </div>
+<div id="container" class="container hidden">
+  <h1 class="mt-4 text-dark text-center">Leaderboard</h1>
+  <br />
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">PLAYER NAME</th>
+        <th scope="col">MATCHES WON</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <footer>
+    <br />
+    <button type="button" class="btn btn-success btn-lg btn-block" href="/record-match">Start Game</button>
+  </footer>
+</div>
+<style>
+  .loader {
+    margin-top: 10rem;
+  }
+
+  .hidden {
+    display: none;
+  }
+</style>
+<script>
+  $(() => {
+    // Get DOM elements
+    const loaderObj = $("#loader");
+    const containerObj = $("#container");
+
+    const getLeaderboard = () => {
+      $.ajax({
+        url: "/api/leaderboard",
+        success: userScores => {
+          if (userScores) {
+            const tableBody = $("#tableBody");
+            userScores.forEach(item => {
+              let template = `<tr class="table-active"><th scope="row">${
+                item.name
+              }</th><td>${item.total}</td></tr>`;
+              tableBody.append($(template));
+            });
+
+            // Display form
+            containerObj.removeClass("hidden");
+            loaderObj.addClass("hidden");
+          }
+        },
+        error: err => console.log(err)
+      });
+    };
+
+    getLeaderboard();
+  });
+</script>

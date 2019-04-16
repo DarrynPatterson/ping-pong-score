@@ -32,30 +32,14 @@ router.post("/register", (req, res) => {
   }
 
   if (errors.length > 0) {
-    res.render("register", {
-      errors,
-      name,
-      email,
-      password,
-      password2
-    });
+    res.render("register", { errors, name, email, password, password2 });
   } else {
     User.findOne({ email: email }).then(user => {
       if (user) {
         errors.push({ msg: "Email already exists" });
-        res.render("register", {
-          errors,
-          name,
-          email,
-          password,
-          password2
-        });
+        res.render("register", { errors, name, email, password, password2 });
       } else {
-        const newUser = new User({
-          name,
-          email,
-          password
-        });
+        const newUser = new User({name, email, password});
 
         // Hash password
         bcrypt.genSalt(10, (err, salt) => {
@@ -65,10 +49,7 @@ router.post("/register", (req, res) => {
             newUser
               .save()
               .then(() => {
-                req.flash(
-                  "success_msg",
-                  "You are now registered and can log in"
-                );
+                req.flash("success_msg", "You are now registered and can log in");
                 res.redirect("/users/login");
               })
               .catch(err => console.log(err));

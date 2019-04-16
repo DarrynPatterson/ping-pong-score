@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "lint-server": "npx eslint routes"
+    "lint-test": "npx eslint routes",
+    "jest-test": "jest --watchAll"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "nodemon": "^1.18.10",
-    "eslint": "^5.16.0"
+    "eslint": "^5.16.0",
+    "jest": "^24.5.0"
   }
 }

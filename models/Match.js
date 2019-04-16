@@ -26,14 +26,18 @@ const game = {
 };
 
 const MatchSchema = new mongoose.Schema({
-  user1Id: {
+  player1Id: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "User"
   },
-  user2Id: {
+  player2Id: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
+    ref: "User"
+  },
+  winnerId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   },
   games: [game],

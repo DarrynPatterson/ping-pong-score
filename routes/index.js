@@ -13,7 +13,7 @@ router.get("/", (req, res) => {
     res.redirect("/record-match");
   } else {
     res.render("home", {
-      title: "Record Games and View Leader Boards",
+      title: "Record Games and Track Match Winners",
       page: "home"
     });
   }
@@ -31,59 +31,47 @@ router.get("/start-match", ensureAuthenticated, (req, res) => {
 router.post("/start-match", ensureAuthenticated, (req, res) => {
   const { player1Id, player2Id } = req.body;
 
-  // Get user names from db
-  const query = User.find({
+  // Get users by id
+  User.find({
     _id: {
-      $in: [
-        mongoose.Types.ObjectId(player1Id),
-        mongoose.Types.ObjectId(player2Id)
-      ]
+      $in: [mongoose.Types.ObjectId(player1Id), mongoose.Types.ObjectId(player2Id)]
     }
-  }).select({ name: 1 });
-
-  query.exec((err, data) => {
-    // If there's an error retrieving user ids then redirect to start-match
-    if (err) {
-      res.redirect("/start-match");
-    }
-
-    // Store match in db
-    const newMatch = new Match({
-      user1Id: player1Id,
-      user2Id: player2Id
+  })
+    .select({ name: 1 })
+    .then(data => {
+      if (data && data.length == 2) {
+        // Create new match
+        const newMatch = new Match({ player1Id, player2Id });
+        newMatch
+          .save()
+          .then(() => {
+            res.redirect("/record-match");
+          })
+          .catch(err => console.log(err));
+      } else {
+        // Both users not found
+        res.redirect("/start-match");
+      }
     });
-
-    newMatch
-      .save()
-      .then(() => {
-        req.flash("success_msg", "Match Started, GO!");
-        res.redirect("/record-match");
-      })
-      .catch(err => console.log(err));
-  });
 });
 
 // GET: Record Match
 router.get("/record-match", ensureAuthenticated, (req, res) => {
-  // Get last incomplete match from db
+  // Get last incomplete match
   Match.find({ isComplete: false })
-    .select({ _id: 1, user1Id: 1, user2Id: 1 })
+    .select({ _id: 1 })
     .then(match => {
       if (match) {
+        // Previous match exists?
         if (match.length > 0) {
           const matchId = match[0]._id;
-          const player1Id = match[0].user1Id;
-          const player2Id = match[0].user2Id;
 
-          // Display record-match with previous match data
           res.render("record-match", {
             title: "Record Games",
-            matchId,
-            player1Id,
-            player2Id
+            matchId
           });
         } else {
-          // If no match found, then redirect to start-match
+          // No match exists
           res.redirect("/start-match");
         }
       }
@@ -94,24 +82,33 @@ router.get("/record-match", ensureAuthenticated, (req, res) => {
 router.post("/record-match", ensureAuthenticated, (req, res) => {
   const { matchId } = req.body;
 
-  // Get match
   Match.findOne({ _id: matchId })
     .select({})
     .then(match => {
       if (match) {
+        const player1Id = match.player1Id;
+        const player2Id = match.player2Id;
+
+        // Update match isComplete flag and winnerId
         match.isComplete = true;
+        match.winnerId = null;
+
+        if (match.games.length > 0) {
+          const player1Wins = match.games.filter(game => game.winnerId.toString() === player1Id.toString()).length;
+          const player2Wins = match.games.filter(game => game.winnerId.toString() === player2Id.toString()).length;
+          match.winnerId = player1Wins > player2Wins ? player1Id : player2Id;
+        }
 
         // Save match
-        match.save().then(match => {
+        match.save().then(() => {
           res.redirect("/leaderboard");
         });
       }
     });
-
-  console.log(req.body);
 });
 
-router.get("/leaderboard", (req, res) => {
+// GET: Leaderboard
+router.get("/leaderboard", ensureAuthenticated, (req, res) => {
   res.render("leaderboard", {
     title: "Leaderboard"
   });

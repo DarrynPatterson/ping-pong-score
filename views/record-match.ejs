@@ -1,187 +1,185 @@
 <% include ./partials/secure-nav %>
 
 <div id="loader" class="container text-center loader">
-  <i class="fas fa-spinner fa-spin fa-5x"></i>
+    <i class="fas fa-spinner fa-spin fa-5x"></i>
 </div>
 <div id="container" class="container hidden">
-  <h1 class="mt-4 text-dark text-center">
-    Record Game <span id="gameLabel"></span>
-  </h1>
-  <br />
-  <form action="/record-match" method="POST">
-    <div class="row">
-      <div class="col text-center">
-        <div id="player1Name" class="player-name"></div>
-      </div>
-      <div class="col text-center text-primary">
-        <span style="font-size:6rem; font-weight: bold;">VS</span>
-      </div>
-      <div class="col text-center">
-        <div id="player2Name" class="player-name"></div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col text-center">
-        <input
-          id="player1Score"
-          class="slider slider-handle slider-selection"
-          type="text"
-          data-slider-min="0"
-          data-slider-max="30"
-          data-slider-step="1"
-          data-slider-value="0"
-        />
-      </div>
-      <div class="col"></div>
-      <div class="col text-center">
-        <input
-          id="player2Score"
-          class="slider slider-handle slider-selection"
-          type="text"
-          data-slider-min="0"
-          data-slider-max="30"
-          data-slider-step="1"
-          data-slider-value="0"
-        />
-      </div>
-    </div>
+    <h1 class="mt-4 text-dark text-center">Record Game <span id="gameLabel"></span></h1>
     <br />
-    <br />
-    <input type="hidden" id="matchId" name="matchId" value="<%= matchId %>" />
-    <input
-      type="hidden"
-      id="player1Id"
-      name="player1Id"
-      value="<%= player1Id %>"
-    />
-    <input
-      type="hidden"
-      id="player2Id"
-      name="player2Id"
-      value="<%= player2Id %>"
-    />
-    <div class="row">
-      <div class="col">
-        <button id="recordGameButton" class="btn btn-success btn-lg btn-block">
-          Record Game
-        </button>
-      </div>
-      <div class="col">
-        <button
-          type="submit"
-          id="recordMatchButton"
-          class="btn btn-danger btn-lg btn-block"
-        >
-          Finish Match
-        </button>
-      </div>
-    </div>
-  </form>
+    <form id="recordMatchForm" action="/record-match" method="POST">
+        <div class="row">
+            <div class="col-sm-5 text-center">
+                <div id="player1Name" class="player-name"></div>
+                <br />
+                <input id="player1Score" class="slider slider-handle slider-selection" type="text" data-slider-min="0" data-slider-max="30" data-slider-step="1" data-slider-value="0"/>
+            </div>
+            <div class="col-sm-2 text-center text-primary">
+                <span class="versus">VS</span>
+            </div>
+            <div class="col-sm-5 text-center">
+                <div id="player2Name" class="player-name"></div>
+                <br />
+                <input id="player2Score" class="slider slider-handle slider-selection" type="text" data-slider-min="0" data-slider-max="30" data-slider-step="1" data-slider-value="0"/>
+            </div>
+        </div>
+        <br />
+        <br />
+        <input type="hidden" id="matchId" name="matchId" value="<%= matchId %>" />
+        <input type="hidden" id="player1Id" name="player1Id" value="" />
+        <input type="hidden" id="player2Id" name="player2Id" value="" />
+        <div class="row">
+            <div class="col-sm-6">
+                <button type="button" id="recordGameButton" class="btn btn-success btn-lg btn-block">Record Game</button>
+            </div>
+            <div class="col-sm-6">
+                <button type="button" id="recordMatchButton" class="btn btn-danger btn-lg btn-block disabled">Finish Match</button>
+            </div>
+        </div>
+    </form>
 </div>
 <style>
-  .loader {
-    margin-top: 10rem;
-  }
+    .loader {
+        margin-top: 10rem;
+    }
 
-  .slider-selection {
-    background: #bababa;
-  }
+    .slider-selection {
+	    background: #BABABA;
+    }
 
-  .player-name {
-    font-size: 2.5rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-bottom: 3rem;
-  }
+    .player-name {
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 3rem;
+    }
 
-  .hidden {
-    display: none;
-  }
+    .hidden {
+        display: none;
+    }
 
-  .tooltip.in {
-    opacity: 1;
-  }
+    .tooltip.in {
+        opacity: 1;
+    }
+
+    .versus {
+        font-weight: bold;
+        font-size:6rem;
+    }
+
+    .spinner {
+        margin-left: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .versus {
+            font-size:3rem;
+        }
+    }
 </style>
 <script>
-  $(() => {
-    // Initialize score selection sliders
-    $(".slider").slider({
-      tooltip: "always"
-    });
+    $(() => {
 
-    const matchId = $("#matchId").attr("value");
-    const player1Id = $("#player1Id").attr("value");
-    const player2Id = $("#player2Id").attr("value");
+        // Initialize score selection sliders
+        $(".slider").slider({
+            "tooltip": "always"
+        });
 
-    // Get DOM elements
-    const loaderObj = $("#loader");
-    const containerObj = $("#container");
-    const recordGameButtonObj = $("#recordGameButton");
+        // MatchId received from form
+        const matchId = $("#matchId").attr("value");
 
-    const getMatch = () => {
-      $.ajax({
-        url: "/api/match",
-        data: { id: matchId },
-        success: match => {
-          if (match) {
-            // Get DOM elements
-            const player1NameObj = $("#player1Name");
-            const player2NameObj = $("#player2Name");
-            const gameLabelObj = $("#gameLabel");
+        const getMatch = () => {
+            $.get({
+            url: "/api/match",
+            data: { id: matchId },
+            success: (match) => {
+                if (match) {
+                    const gamesRecorded = match.games.length;
+                    $("#player1Id").attr("value", match.player1Id);
+                    $("#player2Id").attr("value", match.player2Id);
+                    $("#player1Name").html($(`<span key='${match.player1Id}'>${match.player1Name}</span>`));
+                    $("#player2Name").html($(`<span key='${match.player2Id}'>${match.player2Name}</span>`));
+                    $("#gameLabel").html(gamesRecorded + 1);
 
-            player1NameObj.html(match.player1.name);
-            player2NameObj.html(match.player2.name);
+                    // Enable record match button?
+                    if (gamesRecorded >= 1) {
+                        const recordMatchButton = $("#recordMatchButton");
+                        recordMatchButton.removeClass("disabled");
+                        recordMatchButton.unbind("click");
+                        recordMatchButton.click(recordMatchClickHandler);
+                    }
 
-            let currentGameNumber = match.games.length + 1;
-            gameLabelObj.html(currentGameNumber);
+                    // Display main form
+                    $("#container").removeClass("hidden");
+                    $("#loader").addClass("hidden");
 
-            // Display form
-            containerObj.removeClass("hidden");
-            loaderObj.addClass("hidden");
-          }
-        },
-        error: err => console.log(err)
-      });
-    };
+                    // Refresh DOM elements
+                    $(".slider").slider("refresh");
+                    $(".spinner").remove();
+                }
+            },
+            fail: (err) => console.log(err) });
+        };
 
-    const postMatch = () => {
-      // Get Scores
-      const player1Score = $("#player1Score").val();
-      const player2Score = $("#player2Score").val();
+        const postMatch = () => {
 
-      const winnerScore = Math.max(player1Score, player2Score);
-      const loserScore = Math.min(player1Score, player2Score);
-      let winnerId = player1Score > player2Score ? player1Id : player2Id;
-      let loserId = player1Score < player2Score ? player1Id : player2Id;
+            // Get player ids
+            const player1Id = $("#player1Id").val();
+            const player2Id = $("#player2Id").val();
 
-      $.post(
-        "/api/game",
-        { matchId, winnerId, loserId, winnerScore, loserScore },
-        data => {
-          if (data) {
-            // Refresh DOM elements
-            getMatch();
-            $(".slider").slider("enable");
-            $(".slider").slider("setValue", 0);
-          }
+            // Calculate game outcome
+            const player1Score = parseInt($("#player1Score").val());
+            const player2Score = parseInt($("#player2Score").val());
+            const winnerScore = Math.max(player1Score, player2Score);
+            const loserScore = Math.min(player1Score, player2Score);
+            const winnerId = player1Score > player2Score ? player1Id : player2Id;
+            const loserId = player1Score < player2Score ? player1Id : player2Id;
+
+            // Record game
+            $.post("/api/game", { matchId, winnerId, loserId, winnerScore, loserScore }, (data) => {
+                if (data) {
+
+                    // Refresh match
+                    getMatch();
+                }
+            })
+            .fail((err) => console.log(err));
         }
-      ).fail(err => console.log(err));
-    };
 
-    const recordGameClickHandler = event => {
-      event.preventDefault();
+        const recordGameClickHandler = (event) => {
+            event.preventDefault();
 
-      // Disable DOM elements
-      $(".slider").slider("disable");
+            // Add button spinner
+            const spinnerTemplate = "<span class='spinner spinner-border' role='status' aria-hidden='true'></span>";
+            $(event.target).append($(spinnerTemplate));
 
-      // Record game
-      postMatch();
-    };
+            // Disable DOM elements
+            $(".slider").slider("disable");
 
-    // Get current match
-    getMatch();
+            // Record game
+            postMatch();
+        }
 
-    // Bind click handler
-    recordGameButtonObj.click(recordGameClickHandler);
-  });
+        const recordMatchClickHandler = (event) => {
+            event.preventDefault();
+
+            // Add button spinner
+            const spinnerTemplate = "<span class='spinner spinner-border' role='status' aria-hidden='true'></span>";
+            $(event.target).append($(spinnerTemplate));
+
+            // Disable DOM elements
+            $(".slider").slider("disable");
+
+            // Record match
+            $("#recordMatchForm").submit();
+        }
+
+        // Get current match
+        getMatch();
+        
+        // Bind click handler
+        const recordGameButton = $("#recordGameButton");
+        recordGameButton.unbind("click");
+        recordGameButton.click(recordGameClickHandler);
+
+    });
 </script>
